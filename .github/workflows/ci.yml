@@ -1,0 +1,34 @@
+name: verify
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  known-answer-tests:
+    name: published vectors, under ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make -C tests
+
+  attacks:
+    name: the attacks still work
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The length-extension demo exits non-zero unless the forgery is
+      # accepted by the naive MAC AND rejected by HMAC. It is a test.
+      - run: make -C attacks/length-extension
+      # Timing is measurement, not assertion - a shared runner is noisy, so
+      # this reports and never fails the build.
+      - run: make -C attacks/timing
+
+  links:
+    name: no broken links or anchors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/check-links.py

@@ -1,0 +1,13 @@
+# build output
+*.o
+*.elf
+tests/test_vectors
+attacks/length-extension/extend
+attacks/timing/timing
+
+# editors / OS
+.vscode/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc
