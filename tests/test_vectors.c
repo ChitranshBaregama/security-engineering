@@ -66,6 +66,7 @@ static void sha_kats(void)
     /* One million 'a'. Exercises multi-block handling and the 64-bit
      * length field, which is where hand-written SHA goes wrong. */
     uint8_t *big = malloc(1000000u);
+    if (!big) { fprintf(stderr, "allocation failed\n"); exit(EXIT_FAILURE); }
     memset(big, 'a', 1000000u);
     sha256(big, 1000000u, d);
     free(big);
@@ -113,6 +114,13 @@ static void hmac_kats(void)
     hmac_sha256(k4, sizeof k4, d4, sizeof d4, t);
     expect("case 4", t, sizeof t,
            "82558a389a443c0ea4cc819899f2083a85f0faa3e578f8077a2e3ff46729665b");
+
+    /* RFC 4231 section 4.6: compare only the published 128-bit prefix. */
+    uint8_t k5[20]; memset(k5, 0x0c, sizeof k5);
+    const char *m5 = "Test With Truncation";
+    hmac_sha256(k5, sizeof k5, m5, strlen(m5), t);
+    expect("case 5  (128-bit truncated tag)", t, 16,
+           "a3b6167473100ee06e0c796c2955552b");
 
     uint8_t k6[131]; memset(k6, 0xaa, sizeof k6);
     const char *m6 = "Test Using Larger Than Block-Size Key - Hash Key First";
