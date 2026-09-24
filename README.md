@@ -9,10 +9,9 @@ Cryptographic primitives implemented from their specifications, verified
 against the published test vectors, and then deliberately broken.
 
 Not another explainer. There are excellent books on cryptography and this is
-not competing with them. What is rare is a repository where every claim is
-executable: the primitive is built from the standard, it reproduces the
-official vectors, and the attack that motivates each rule is demonstrated
-rather than described.
+not competing with them. This repository pairs selected primitives with published known-answer tests
+and executable demonstrations. Tests and measurements have distinct scopes;
+neither establishes production cryptographic assurance.
 
 ```bash
 make                      # build everything, run the vectors, run the attacks
@@ -22,10 +21,10 @@ make                      # build everything, run the vectors, run the attacks
 
 ## Why implement, rather than summarise
 
-You do not really understand why a MAC nonce must never repeat until your own
-code hands you the private key. You do not feel why a tag comparison must be
-constant-time until you have plotted your own timing data and watched the
-secret leak out byte by byte.
+The length-extension demonstration shows why a secret-prefix SHA-256 MAC
+is unsafe and compares it with HMAC. The timing experiment measures how
+early returning comparisons vary with matching-prefix length; it does not
+implement complete tag recovery. HMAC itself does not require a nonce.
 
 So each topic has four parts:
 
@@ -70,7 +69,7 @@ purpose: one topic done to this standard is worth more than ten sketched.
 The same attack against HMAC-SHA-256, in the same program: **rejected.** That
 is what HMAC's outer hash buys you, and seeing both in one run is the point.
 
-**A tag comparison that returns early leaks the tag.**
+**A tag comparison that returns early can reveal matching-prefix length.**
 
 ```
   matching     naive compare      constant-time compare
@@ -82,8 +81,9 @@ is what HMAC's outer hash buys you, and seeing both in one run is the point.
   constant-time:  0.86x
 ```
 
-Monotonic. That trend is the attack: 8192 oracle queries to recover a 32-byte
-tag, instead of 2^256.
+These example measurements illustrate a possible timing signal. This program
+does not recover a tag or demonstrate a fixed query count; results depend on
+the compiler, machine, and measurement noise.
 
 ---
 
